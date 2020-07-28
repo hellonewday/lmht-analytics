@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import "./App.css";
-import { TextField, Button, Container, Grid } from "@material-ui/core";
+import {
+  TextField,
+  Button,
+  Container,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@material-ui/core";
 import Axios from "axios";
 import { queues } from "./queues";
 import moment from "moment";
@@ -11,10 +20,17 @@ function App() {
   const [ingame, setIngame] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [limit, setLimit] = useState(5);
   const handleChange = (e, value) => {
     setIngame(e.target.value);
   };
-  const handleSubmit = () => {
+
+  const handleSetLimit = (e, value) => {
+    setLimit(e.target.value);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
     let something = [];
     setLoading(true);
     ingame === null || ingame === ""
@@ -66,6 +82,13 @@ function App() {
                   item.participants[0].stats.item5,
                   item.participants[0].stats.item6,
                 ],
+                spells: [
+                  item.participants[0].spell1Id,
+                  item.participants[0].spell2Id,
+                ],
+                longest_time_living: item.participants[0].stats.longestTimeSpentLiving,
+                vision_score: item.participants[0].stats.visionScore,
+                
               };
             });
             something.push(...data);
@@ -96,12 +119,6 @@ function App() {
                   item.participants[0].stats.kills,
                   item.participants[0].stats.deaths,
                   item.participants[0].stats.assists,
-                  item.participants[0].stats.deaths !== 0
-                    ? item.participants[0].stats.kills +
-                      item.participants[0].stats.assists /
-                        item.participants[0].stats.deaths
-                    : item.participants[0].stats.kills +
-                      item.participants[0].stats.assists,
                 ],
                 items: [
                   item.participants[0].stats.item0,
@@ -116,9 +133,11 @@ function App() {
             });
             something.push(...data1);
             setHistory(
-              something.sort((a, b) => {
-                return new Date(b.realTime) - new Date(a.realTime);
-              })
+              something
+                .sort((a, b) => {
+                  return new Date(b.realTime) - new Date(a.realTime);
+                })
+                .slice(0, limit)
             );
             setLoading(false);
           });
@@ -127,9 +146,31 @@ function App() {
     <div>
       <p className="App">
         <h1>LMHT Analytics</h1>
-
-        <TextField label="Ingame" onChange={handleChange} />
-        <Button onClick={handleSubmit}>Tìm kiếm</Button>
+        <FormControl>
+          <TextField label="Ingame" onChange={handleChange} />
+        </FormControl>
+        <FormControl style={{ width: 100, marginLeft: 10 }}>
+          <InputLabel id="demo-simple-select-helper-label">
+            Số trận xem
+          </InputLabel>
+          <Select
+            labelId="demo-simple-select-helper-label"
+            id="demo-simple-select-helper"
+            value={limit}
+            onChange={handleSetLimit}
+          >
+            <MenuItem value={5}>
+              <em>-- Chọn</em>
+            </MenuItem>
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={20}>20</MenuItem>
+            <MenuItem value={30}>30</MenuItem>
+            <MenuItem value={40}>40</MenuItem>
+          </Select>
+        </FormControl>
+        <Button type="submit" onClick={handleSubmit}>
+          Tìm kiếm
+        </Button>
         <p> {loading ? "Loading..." : ""}</p>
       </p>
       <Container>
@@ -147,12 +188,7 @@ function App() {
                   100}{" "}
                 % tỉ lệ thắng
               </div>
-              <div>
-                {history.map((item) => {
-                  return item.kda;
-                })}{" "}
-                % tỉ lệ thua
-              </div>
+              {/* <div>{<p>Hello World</p>}</div> */}
             </section>
           </div>
         ) : (
@@ -180,6 +216,12 @@ function App() {
                 <Grid item xs={12} lg={1} style={{ paddingTop: 20 }}>
                   <span>
                     {item.kda[0]}/{item.kda[1]}/{item.kda[2]}
+                    <br />
+                    {item.kda[1] !== 0
+                      ? parseFloat(
+                          (item.kda[0] + item.kda[2]) / item.kda[1]
+                        ).toFixed(2)
+                      : item.kda[0] + item.kda[2]}
                   </span>
                   <br />
                   <span style={{ color: item.result ? "green" : "red" }}>

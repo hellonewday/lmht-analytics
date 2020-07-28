@@ -1,19 +1,44 @@
 import React from "react";
 import { Chart } from "react-charts";
-import { Typography } from "@material-ui/core";
+import { Typography, Divider } from "@material-ui/core";
 
 export function MyChart({ history }) {
-  const data = React.useMemo(
+  const data1 = React.useMemo(
     () => [
       {
-        label: "Series 2",
+        label: "KDA",
         data: history.map((item) => {
-          return [history.indexOf(item) + 1, item.kda[3]];
+          return [
+            history.indexOf(item) + 1,
+            item.kda[1] !== 0
+              ? parseFloat((item.kda[0] + item.kda[2]) / item.kda[1]).toFixed(2)
+              : item.kda[0] + item.kda[2],
+          ];
+        }),
+      },
+      {
+        label: "Mạng hạ gục",
+        data: history.map((item) => {
+          return [history.indexOf(item) + 1, item.kda[0]];
+        }),
+      },
+      {
+        label: "Chết",
+        data: history.map((item) => {
+          return [history.indexOf(item) + 1, item.kda[1]];
+        }),
+      },
+      {
+        label: "Hỗ trợ",
+        data: history.map((item) => {
+          return [history.indexOf(item) + 1, item.kda[2]];
         }),
       },
     ],
     [history]
   );
+  
+  
 
   const series = React.useMemo(
     () => ({
@@ -25,7 +50,7 @@ export function MyChart({ history }) {
     () => [
       {
         primary: true,
-        type: "linear",
+        type: "ordinal",
         position: "bottom",
       },
       {
@@ -37,15 +62,24 @@ export function MyChart({ history }) {
   );
 
   return (
-    <div
-      style={{
-        width: "400px",
-        height: "400px",
-      }}
-    >
-      <Typography variant="h5">Thống kê KDA 40 trận gần đây</Typography>
-      <Chart series={series} data={data} axes={axes} primaryCursor tooltip />
-      {/* */}
+    <div>
+      <div
+        style={{
+          // width: "400px",
+          height: "400px",
+        }}
+      >
+        <Typography variant="h5">
+          Thống kê KDA {history.length} trận gần đây
+        </Typography>
+        <Chart series={series} data={data1} axes={axes} primaryCursor tooltip />
+        {/* */}
+      </div>
+      <br />
+      <br />
+      <Divider />
+      <br />
+
     </div>
   );
 }
